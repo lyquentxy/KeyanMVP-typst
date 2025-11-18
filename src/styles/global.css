@@ -1,0 +1,676 @@
+/* 全局样式和Design Token - 基于Ant Design 5.x设计规范 */
+
+:root {
+  /* 品牌色系 - Ant Design 5.x 标准色彩 */
+  --color-primary: #1677ff;
+  --color-primary-bg: #e6f7ff;
+  --color-primary-border: #91d5ff;
+  --color-primary-hover: #4096ff;
+  --color-primary-active: #0958d9;
+
+  /* 功能色系 */
+  --color-success: #52c41a;
+  --color-success-bg: #f6ffed;
+  --color-success-border: #b7eb8f;
+
+  --color-warning: #faad14;
+  --color-warning-bg: #fffbe6;
+  --color-warning-border: #ffe58f;
+
+  --color-error: #ff4d4f;
+  --color-error-bg: #fff2f0;
+  --color-error-border: #ffccc7;
+
+  --color-info: #13c2c2;
+  --color-info-bg: #e6fffb;
+  --color-info-border: #87e8de;
+
+  /* 中性色系 - Ant Design 5.x 文本层级 */
+  --color-text: rgba(0, 0, 0, 0.88);
+  --color-text-secondary: rgba(0, 0, 0, 0.65);
+  --color-text-tertiary: rgba(0, 0, 0, 0.45);
+  --color-text-quaternary: rgba(0, 0, 0, 0.25);
+
+  --color-bg-container: #ffffff;
+  --color-bg-elevated: #ffffff;
+  --color-bg-layout: #f5f5f5;
+  --color-bg-spotlight: #ffffff;
+  --color-bg-mask: rgba(0, 0, 0, 0.45);
+
+  --color-border: #d9d9d9;
+  --color-border-secondary: #f0f0f0;
+
+  /* 间距系统 - 基于Ant Design官方规范 */
+  --padding-xs: 8px;       /* 小间距 */
+  --padding-sm: 12px;      /* 中间距 */
+  --padding: 16px;         /* 大间距 - 栅格Gutter标准 */
+  --padding-lg: 24px;      /* 特大间距 - 栅格Gutter备选 */
+  --padding-xl: 32px;      /* 超大间距 */
+
+  /* 页面布局标准 */
+  --page-width-max: 1440px;     /* 页面总宽 */
+  --content-width-max: 1208px;  /* 内容区宽度 */
+  --sidebar-width: 250px;       /* 侧边栏宽度 */
+  --sidebar-collapsed-width: 80px;  /* 折叠侧边栏宽度 */
+  --sidebar-margin: 72px;       /* 外留白 */
+  --header-height: 64px;        /* 顶部导航高度 */
+
+  /* 圆角系统 */
+  --border-radius-sm: 4px;
+  --border-radius: 6px;
+  --border-radius-lg: 8px;
+
+  /* 阴影系统 */
+  --box-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px rgba(0, 0, 0, 0.02);
+  --box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03), 0 1px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px rgba(0, 0, 0, 0.02);
+  --box-shadow-lg: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+
+  /* 字体系统 */
+  --font-size-sm: 12px;
+  --font-size: 14px;
+  --font-size-lg: 16px;
+  --font-size-xl: 20px;
+  --font-size-heading-1: 38px;
+  --font-size-heading-2: 30px;
+  --font-size-heading-3: 24px;
+  --font-size-heading-4: 20px;
+  --font-size-heading-5: 16px;
+
+  --line-height: 1.5714285714285714;
+  --line-height-sm: 1.66666666667;
+  --line-height-lg: 1.5;
+
+  /* 动画系统 */
+  --transition-duration: 0.2s;
+  --transition-timing-function: cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+/* 全局样式重置 */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body, #root {
+  height: 100%;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
+    'Noto Color Emoji';
+  font-size: var(--font-size);
+  line-height: var(--line-height);
+  color: var(--color-text);
+  background-color: var(--color-bg-layout);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 布局基础样式 */
+.app-container {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.main-content {
+  padding: var(--padding-lg);
+  background-color: var(--color-bg-layout);
+  min-height: calc(100vh - var(--header-height));
+}
+
+/* ========================= */
+/* 通用页面布局解决方案 */
+/* ========================= */
+
+/* 常规页面布局 - 标准内容区 */
+.page-container {
+  width: 100%;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 24px !important;
+  min-height: calc(100vh - 64px);
+}
+
+/* 全屏页面布局 - 完全填充可视区域 */
+.full-page-container {
+  position: absolute;
+  top: 64px;
+  left: 250px;
+  right: 0;
+  bottom: 0;
+  width: calc(100vw - 250px) !important;
+  height: calc(100vh - 64px) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: var(--color-bg-container);
+}
+
+/* 侧边栏折叠时的全屏布局 */
+.full-page-container.collapsed {
+  left: 80px;
+  width: calc(100vw - 80px) !important;
+}
+
+/* 紧凑页面布局 - 减少内边距 */
+.compact-page-container {
+  width: 100%;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 16px !important;
+  min-height: calc(100vh - 64px);
+}
+
+/* 聊天页面专用布局 */
+.chat-page-container {
+  width: 100%;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 16px 24px !important;
+  height: calc(100vh - 64px);
+  overflow: hidden;
+}
+
+/* ========================= */
+/* 工作台类页面（全屏工作区） */
+/* ========================= */
+
+/* 避免被居中/最大宽度容器束缚，工作台页面应占满可视区域 */
+.typst-editor {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* 编辑器工作台专用样式 - 适配 ProLayout */
+.typst-editor.workbench {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: var(--color-bg-container);
+  min-height: calc(100vh - 48px); /* ProLayout 减去头部高度 */
+}
+
+/* 工作台布局 */
+.workbench {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-container);
+  overflow: hidden; /* 只让内部区域滚动 */
+}
+
+.workbench-header {
+  height: var(--header-height);
+  min-height: var(--header-height);
+  background: var(--color-bg-container);
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--color-border-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.workbench-body {
+  flex: 1;
+  display: flex;
+  overflow: hidden; /* 防止出现第二个滚动条 */
+}
+
+.workbench-sider {
+  flex: 0 0 280px;
+  width: 280px;
+  background: var(--color-bg-container);
+  border-right: 1px solid var(--color-border-secondary);
+  overflow: auto; /* 侧栏内部滚动 */
+}
+
+.workbench-content {
+  flex: 1 1 auto;
+  display: flex;
+  background: var(--color-bg-container);
+  overflow: hidden; /* 由内部编辑/预览区决定滚动 */
+}
+
+.editor-pane {
+  flex: 1 1 auto;
+  min-width: 640px; /* 保障编辑区可用宽度 */
+  padding: 16px;
+  overflow: auto;
+}
+
+.preview-pane {
+  /* 在 520px 到 720px 之间自适应，首选占 38% */
+  flex: 0 0 clamp(520px, 38%, 720px);
+  min-width: 520px;
+  max-width: 75%;
+  border-left: 1px solid var(--color-border-secondary);
+  padding: 16px;
+  overflow: auto;
+}
+
+/* 大屏下预览可以稍微更宽一点 */
+@media (min-width: 1600px) {
+  .preview-pane {
+    flex-basis: clamp(600px, 36%, 840px);
+    min-width: 600px;
+  }
+}
+
+/* 中屏：略收窄预览，保证编辑区主导 */
+@media (max-width: 1400px) {
+  .preview-pane {
+    flex-basis: clamp(480px, 42%, 640px);
+    min-width: 480px;
+  }
+}
+
+/* 小屏：隐藏预览，改为仅编辑模式（可通过按钮显示抽屉式预览） */
+@media (max-width: 992px) {
+  .preview-pane {
+    display: none;
+  }
+}
+
+/* 卡片等高布局 */
+.equal-height-cards .ant-list-item {
+  height: 100%;
+}
+
+.equal-height-cards .ant-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.equal-height-cards .ant-card-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 响应式设计 */
+/* 大屏幕 ≥1440px: 内容区居中，不再扩大 */
+@media (min-width: 1440px) {
+  .main-content {
+    max-width: var(--content-width-max);
+    margin: 0 auto;
+  }
+}
+
+/* 中等屏幕 1024px-1440px: 内容区缩小，保持72px留白 */
+@media (max-width: 1440px) and (min-width: 1024px) {
+  .main-content {
+    margin: 0 var(--sidebar-margin);
+  }
+}
+
+/* 小屏幕 <1024px: 去除留白，支持横向滚动 */
+@media (max-width: 1024px) {
+  .main-content {
+    padding: var(--padding);
+  }
+}
+
+/* 移动端 <768px: 卡片垂直堆叠，间距优化 */
+@media (max-width: 768px) {
+  .main-content {
+    padding: var(--padding-sm);
+  }
+
+  .ant-row [class*="ant-col-"] {
+    margin-bottom: var(--padding);
+  }
+}
+
+/* 工具类 */
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.full-height {
+  height: 100%;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.flex-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.mb-0 { margin-bottom: 0 !important; }
+.mb-xs { margin-bottom: var(--padding-xs) !important; }
+.mb-sm { margin-bottom: var(--padding-sm) !important; }
+.mb { margin-bottom: var(--padding) !important; }
+.mb-lg { margin-bottom: var(--padding-lg) !important; }
+.mb-xl { margin-bottom: var(--padding-xl) !important; }
+
+.mt-0 { margin-top: 0 !important; }
+.mt-xs { margin-top: var(--padding-xs) !important; }
+.mt-sm { margin-top: var(--padding-sm) !important; }
+.mt { margin-top: var(--padding) !important; }
+.mt-lg { margin-top: var(--padding-lg) !important; }
+.mt-xl { margin-top: var(--padding-xl) !important; }
+
+/* 全局滚动条样式优化 */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) var(--color-bg-layout);
+}
+
+/* Webkit 浏览器滚动条 */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-layout);
+  border-radius: 4px;
+  margin: 2px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, var(--color-border) 0%, var(--color-text-quaternary) 100%);
+  border-radius: 4px;
+  border: 1px solid var(--color-bg-layout);
+  transition: all 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, var(--color-text-tertiary) 0%, var(--color-text-secondary) 100%);
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: var(--color-primary);
+  box-shadow: inset 0 0 8px rgba(22, 119, 255, 0.3);
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--color-bg-layout);
+}
+
+/* 特殊容器滚动条样式 */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 3px;
+  transition: all 0.2s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+/* 深色主题滚动条 */
+@media (prefers-color-scheme: dark) {
+  * {
+    scrollbar-color: rgba(255, 255, 255, 0.2) rgba(255, 255, 255, 0.05);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0.1) 100%);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.3) 0%, rgba(255, 255, 255, 0.2) 100%);
+  }
+}
+
+/* 动画效果 */
+.fade-in {
+  animation: fadeIn var(--transition-duration) var(--transition-timing-function);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Ant Design 组件定制 */
+.ant-layout {
+  background-color: var(--color-bg-layout);
+}
+
+.ant-layout-header {
+  background-color: var(--color-bg-container);
+  border-bottom: 1px solid var(--color-border-secondary);
+  padding: 0 var(--padding-lg);
+  height: var(--header-height);
+  line-height: var(--header-height);
+}
+
+.ant-layout-sider {
+  background-color: var(--color-bg-container);
+  border-right: 1px solid var(--color-border-secondary);
+}
+
+.ant-menu {
+  background-color: transparent;
+}
+
+.ant-card {
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow-sm);
+}
+
+.ant-card-head {
+  border-bottom: 1px solid var(--color-border-secondary);
+}
+
+/* 表格数字对齐 */
+.ant-table-tbody > tr > td.numeric {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+/* 状态颜色 */
+.status-success {
+  color: var(--color-success);
+}
+
+.status-warning {
+  color: var(--color-warning);
+}
+
+.status-error {
+  color: var(--color-error);
+}
+
+.status-processing {
+  color: var(--color-primary);
+}
+
+/* 系统展示专用滚动条样式 */
+.system-display-scroll {
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary-border) var(--color-primary-bg);
+}
+
+.system-display-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+.system-display-scroll::-webkit-scrollbar-track {
+  background: var(--color-primary-bg);
+  border-radius: 8px;
+  border: 1px solid var(--color-primary-border);
+}
+
+.system-display-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-primary-hover) 100%);
+  border-radius: 8px;
+  border: 2px solid var(--color-primary-bg);
+  box-shadow: 0 2px 8px rgba(22, 119, 255, 0.2);
+}
+
+.system-display-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(135deg, var(--color-primary-hover) 0%, var(--color-primary-active) 100%);
+  box-shadow: 0 4px 12px rgba(22, 119, 255, 0.4);
+}
+
+/* 数据展示表格滚动条 */
+.data-table-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.data-table-scroll::-webkit-scrollbar-thumb {
+  background: var(--color-text-quaternary);
+  border-radius: 4px;
+  border: 1px solid var(--color-bg-container);
+}
+
+.data-table-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.1);
+}
+
+/* 消息列表滚动条 */
+.message-list-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.message-list-scroll::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+.message-list-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* 聊天消息样式 */
+.chat-message {
+  margin-bottom: var(--padding);
+}
+
+.chat-message-user {
+  text-align: right;
+}
+
+.chat-message-assistant {
+  text-align: left;
+}
+
+.chat-message-content {
+  display: inline-block;
+  max-width: 80%;
+  padding: var(--padding-sm) var(--padding);
+  border-radius: var(--border-radius);
+  word-wrap: break-word;
+}
+
+.chat-message-user .chat-message-content {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.chat-message-assistant .chat-message-content {
+  background-color: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-secondary);
+}
+
+/* 上传区域样式 */
+.upload-area {
+  border: 2px dashed var(--color-border);
+  border-radius: var(--border-radius);
+  transition: border-color var(--transition-duration) var(--transition-timing-function);
+}
+
+.upload-area:hover {
+  border-color: var(--color-primary);
+}
+
+.upload-area.active {
+  border-color: var(--color-primary);
+  background-color: var(--color-primary-bg);
+}
+
+/* Tree组件样式 - 修复菜单缩进问题 */
+.typst-editor .ant-tree {
+  font-size: 13px;
+}
+
+.typst-editor .ant-tree-node-content-wrapper {
+  width: 100%;
+  padding: 4px 8px;
+  border-radius: var(--border-radius-sm);
+  transition: all 0.2s ease;
+}
+
+.typst-editor .ant-tree-node-content-wrapper:hover {
+  background-color: var(--color-primary-bg);
+}
+
+.typst-editor .ant-tree-node-selected .ant-tree-node-content-wrapper {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.typst-editor .ant-tree-node-content-wrapper:hover .ant-tree-title {
+  color: inherit;
+}
+
+.typst-editor .ant-tree-node-selected .ant-tree-title {
+  color: inherit;
+}
+
+/* Tree列表项样式 */
+.typst-editor .ant-tree-treenode {
+  padding: 2px 0;
+  margin: 0;
+}
+
+/* 修复Tree节点的缩进问题 */
+.typst-editor .ant-tree-indent-unit {
+  width: 16px;
+}
+
+/* 确保自定义内容的宽度正确 */
+.typst-editor .ant-tree-list {
+  overflow-x: hidden;
+}
+
+.typst-editor .ant-tree-list-holder-inner {
+  align-items: stretch;
+}

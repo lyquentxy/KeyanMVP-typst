@@ -1,0 +1,21 @@
+{
+  "name": "typst-tinymist-server",
+  "version": "1.0.0",
+  "description": "Tinymist服务器，为Typst编辑器提供实时预览支持",
+  "main": "tinymist-server.js",
+  "scripts": {
+    "start": "node tinymist-server.js",
+    "dev": "nodemon tinymist-server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "ws": "^8.14.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "keywords": ["typst", "tinymist", "preview", "websocket"],
+  "author": "Typst Editor Team",
+  "license": "MIT"
+}

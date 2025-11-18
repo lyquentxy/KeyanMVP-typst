@@ -1,0 +1,50 @@
+{
+  "name": "typst-editor-frontend",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Typst编辑器前端 - 基于React + TypeScript + Ant Design 5.x的智能文档编辑系统，集成RAGFlow智能体",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "lint:fix": "eslint . --ext ts,tsx --fix"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^6.0.2",
+    "@ant-design/pro-components": "^2.8.10",
+    "ant-design-pro": "file:..",
+    "antd": "^5.27.4",
+    "axios": "^1.12.2",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1",
+    "react-router-dom": "^7.9.2"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.1.5",
+    "@types/react-dom": "^19.1.5",
+    "@typescript-eslint/eslint-plugin": "^8.20.0",
+    "@typescript-eslint/parser": "^8.20.0",
+    "@vitejs/plugin-react": "^5.0.3",
+    "eslint": "^9.19.0",
+    "eslint-plugin-react-hooks": "^5.0.3",
+    "eslint-plugin-react-refresh": "^0.4.16",
+    "typescript": "~5.8.3",
+    "vite": "^7.1.7"
+  },
+  "keywords": [
+    "react",
+    "typescript",
+    "ant-design",
+    "typst",
+    "ragflow",
+    "document-processing",
+    "latex-alternative"
+  ],
+  "author": "Typst Editor Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

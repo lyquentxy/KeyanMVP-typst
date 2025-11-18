@@ -30,14 +30,13 @@ docx-processor-frontend/
 │   │   └── Layout/          # 主布局组件
 │   ├── pages/               # 页面组件
 │   │   ├── Home.tsx         # 首页系统概览
-│   │   ├── ChapterManager.tsx # 章节管理
-│   │   ├── AgentList.tsx    # 智能体列表
-│   │   ├── AgentChat.tsx    # 智能体对话
+│   │   ├── TypstEditor.tsx  # Typst可研编辑器
+│   │   ├── QAChat.tsx       # MiniMax问答助手
 │   │   └── Settings.tsx     # 系统设置
-│   ├── services/            # API服务层
-│   │   └── ragflowApi.ts    # RAGFlow API客户端
+│   ├── services/            # AI模块封装
+│   │   └── photovoltaicAiService.ts # MiniMax调用+数据验证
 │   ├── types/               # TypeScript类型定义
-│   │   └── ragflow.ts       # RAGFlow相关类型
+│   │   └── aiModule.ts      # Typst AI模块类型
 │   ├── utils/               # 工具函数
 │   │   └── antdComponents.ts # Ant Design组件统一导入
 │   ├── styles/              # 样式文件
@@ -53,8 +52,8 @@ docx-processor-frontend/
 ## 🎯 核心功能模块
 
 ### 1. 首页概览 (Home)
-- ✅ RAGFlow服务连接状态检测
-- ✅ 系统统计数据展示 (知识库/文档/智能体/对话数量)
+- ✅ MiniMax 模块连接状态检测
+- ✅ 光伏章节与规范指标展示
 - ✅ 快速功能入口
 - ✅ 进度引导和快速开始指南
 
@@ -83,10 +82,10 @@ docx-processor-frontend/
 - 🔄 消息历史滚动
 
 ### 6. 系统设置 (Settings)
-- 🔄 多栏表单布局 (14:10信息密度优化)
-- 🔄 RAGFlow API配置管理
-- 🔄 系统偏好设置
-- 🔄 配置数据持久化
+- ✅ 多栏表单布局 (14:10信息密度优化)
+- ✅ MiniMax API配置管理
+- ✅ 模块状态检测
+- ✅ 配置数据持久化
 
 > 🔄 = 待完善实现，✅ = 已完成
 
@@ -162,14 +161,16 @@ npm run lint:fix
 
 ## 🔌 API集成
 
-### RAGFlow API配置
+### MiniMax API配置
 
 1. **进入系统设置页面** (`/settings`)
 2. **配置API信息**:
-   - API密钥: 从RAGFlow获取
-   - 服务地址: 默认 `http://localhost:9380`
-3. **测试连接**: 点击连接测试按钮
-4. **保存配置**: 设置会自动保存到localStorage
+   - API密钥: 从 MiniMax 控制台获取
+   - Base URL: 默认 `https://api.minimaxi.com/anthropic`
+   - 模型: `MiniMax-M2` 或 `MiniMax-M2-Stable`
+   - Temperature/MaxTokens 等参数按需调整
+3. **测试连接**: 使用“测试连接”按钮校验配置
+4. **保存配置**: 设置会自动保存到 localStorage
 
 ### API客户端特性
 
@@ -199,7 +200,7 @@ npm run lint:fix
 ## 🔮 架构扩展点
 
 ### 1. Typst集成准备
-- 保留现有RAGFlow API架构
+- 基于 MiniMax AI 模块的数据验证 + Typst 模板流程
 - 替换DOCX处理为Typst处理
 - 增加Typst模板系统
 - 支持实时预览和编译

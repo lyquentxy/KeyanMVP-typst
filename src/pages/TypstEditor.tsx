@@ -30,6 +30,8 @@ import TypstCodeEditor from '@/components/TypstEditor/TypstCodeEditor';
 import RealTypstPreview from '@/components/TypstEditor/RealTypstPreview';
 import AIAssistant from '@/components/TypstEditor/AIAssistant';
 import GlobalSettings from '@/components/TypstEditor/GlobalSettings';
+import { photovoltaicAIService } from '@/services/photovoltaicAiService';
+import type { ChapterType } from '@/types/aiModule';
 
 const { Title, Text } = Typography;
 // 使用自定义工作台样式替代 Layout 子组件
@@ -98,6 +100,16 @@ const editorWrapperStyle: React.CSSProperties = {
   flex: 1,
   overflow: 'hidden',
   height: '100%',
+};
+
+const CHAPTER_KEYWORDS: Record<ChapterType, string> = {
+  project_overview: '项目概况',
+  construction_conditions: '建设条件分析',
+  technical_solution: '技术方案',
+  construction_organization: '施工组织设计',
+  investment_analysis: '财务评价',
+  risk_analysis: '风险分析',
+  conclusion: '结论与建议'
 };
 
 const TypstEditor: React.FC = () => {
@@ -603,130 +615,60 @@ nasa、mete、sgis
     }
   }, [document.sections, messageApi]);
 
-  // RAGFlow API 配置
-  const [ragflowConfig, setRagflowConfig] = useState({
-    apiUrl: '', // 可以从设置页面配置
-    apiKey: '', // 可以从设置页面配置
-    enabled: false
-  });
-
-  // RAGFlow API 接口
-  const ragflowApiInterface = useCallback(async (prompt: string, context?: any) => {
-    if (!ragflowConfig.enabled || !ragflowConfig.apiUrl) {
-      return {
-        success: false,
-        message: 'RAGFlow API接口未启用或未配置',
-        recommendations: []
-      };
-    }
-
-    try {
-      // 实际的 RAGFlow API 调用实现
-      const response = await fetch(`${ragflowConfig.apiUrl}/api/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${ragflowConfig.apiKey}`
-        },
-        body: JSON.stringify({
-          prompt,
-          context: context || {
-            documentType: '屋顶分布式光伏项目初步设计报告',
-            totalChapters: 16,
-            selectedChapters: document.sections.filter(s => s.type === 'chapter' && s.selected !== false).length
-          }
-        })
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        return {
-          success: true,
-          message: 'AI推荐获取成功',
-          recommendations: data.recommendations || []
-        };
-      } else {
-        return {
-          success: false,
-          message: `RAGFlow API调用失败: ${response.status}`,
-          recommendations: []
-        };
-      }
-    } catch (error) {
-      console.error('RAGFlow API调用错误:', error);
-      return {
-        success: false,
-        message: 'RAGFlow API连接失败',
-        recommendations: []
-      };
-    }
-  }, [ragflowConfig, document.sections]);
-
   // 推荐获取状态
   const [isGettingRecommendations, setIsGettingRecommendations] = useState(false);
 
-  // 获取AI章节推荐
-  const getChapterRecommendations = useCallback(async () => {
-    setIsGettingRecommendations(true);
-    try {
-      const prompt = `请基于"屋顶分布式光伏项目初步设计报告"的要求，推荐最合适的章节组合。
-可选章节包括：
-${document.sections.filter(s => s.type === 'chapter').map(s => `- ${s.title}`).join('\n')}
-
-请根据项目的完整性、合规性和实用性，推荐应该包含哪些章节。`;
-
-      const result = await ragflowApiInterface(prompt);
-
-      if (result.success && result.recommendations.length > 0) {
-        // 应用推荐结果
-        Modal.confirm({
-          title: 'AI章节推荐',
-          content: (
-            <div>
-              <p>AI推荐以下章节组合：</p>
-              <ul>
-                {result.recommendations.map((rec: any, index: number) => (
-                  <li key={index}>{rec.title || rec}</li>
-                ))}
-              </ul>
-              <p>是否应用此推荐？</p>
-            </div>
-          ),
-          onOk: () => applyChapterRecommendations(result.recommendations),
-          onCancel: () => messageApi.info('已取消应用推荐')
-        });
-      } else {
-        messageApi.warning(result.message);
-      }
-    } catch (error) {
-      messageApi.error('获取AI推荐失败');
-      console.error('获取推荐错误:', error);
-    } finally {
-      setIsGettingRecommendations(false);
-    }
-  }, [ragflowApiInterface, messageApi, document.sections]);
-
   // 应用章节推荐
-  const applyChapterRecommendations = useCallback((recommendations: any[]) => {
-    const recommendedChapterTitles = recommendations.map(rec =>
-      typeof rec === 'string' ? rec : rec.title
-    );
+  const applyChapterRecommendations = useCallback((recommendations: ChapterType[]) => {
+    const keywords = recommendations.map(chapter => CHAPTER_KEYWORDS[chapter]).filter(Boolean);
 
     setDocument(prev => ({
       ...prev,
       sections: prev.sections.map(section => {
         if (section.type === 'chapter') {
-          const isRecommended = recommendedChapterTitles.some(title =>
-            section.title.includes(title.replace(/第[一二三四五六七八九十]+章\s*/, ''))
-          );
+          const isRecommended = keywords.some(keyword => section.title.includes(keyword));
           return { ...section, selected: isRecommended };
         }
         return section;
       })
     }));
 
-    messageApi.success(`已应用AI推荐，选择了 ${recommendedChapterTitles.length} 个章节`);
+    messageApi.success(`已应用MiniMax推荐，激活 ${keywords.length} 个章节`);
   }, [messageApi]);
+
+  // 获取AI章节推荐
+  const getChapterRecommendations = useCallback(async () => {
+    setIsGettingRecommendations(true);
+    try {
+      const recommendation = await photovoltaicAIService.recommendChapters(
+        photovoltaicAIService.getCachedInput()
+      );
+
+      const names = recommendation.recommendedChapters.map(id => CHAPTER_KEYWORDS[id]);
+
+      Modal.confirm({
+        title: 'MiniMax章节推荐',
+        content: (
+          <div>
+            <p>推荐章节：</p>
+            <ul>
+              {names.map((name, index) => (
+                <li key={index}>{name}</li>
+              ))}
+            </ul>
+            <p style={{ marginTop: 12 }}>理由：{recommendation.rationale}</p>
+          </div>
+        ),
+        onOk: () => applyChapterRecommendations(recommendation.recommendedChapters),
+        okText: '应用组合',
+        cancelText: '保留当前'
+      });
+    } catch (error) {
+      messageApi.error(`获取AI推荐失败：${(error as Error).message}`);
+    } finally {
+      setIsGettingRecommendations(false);
+    }
+  }, [messageApi, applyChapterRecommendations]);
 
   // 删除章节
   const deleteSection = useCallback((sectionId: string) => {
@@ -782,7 +724,7 @@ ${document.sections.filter(s => s.type === 'chapter').map(s => `- ${s.title}`).j
   const saveDocument = useCallback(async () => {
     try {
       // 这里应该实现实际的保存逻辑
-      const documentJson = JSON.stringify(document, null, 2);
+      JSON.stringify(document, null, 2);
 
       // 模拟保存到本地文件系统
 

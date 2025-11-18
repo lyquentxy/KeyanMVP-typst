@@ -191,14 +191,14 @@ export const themeConfig = {
   },
   components: {
     Layout: {
-      colorBgHeader: '#ffffff',
-      colorBgBody: '#f5f5f5',
-      colorBgTrigger: '#ffffff',
+      headerBg: '#ffffff',
+      bodyBg: '#f5f5f5',
+      triggerBg: '#ffffff',
     },
     Menu: {
-      colorItemBgSelected: '#e6f7ff',
-      colorItemTextSelected: '#1677ff',
-      colorItemBgHover: '#f5f5f5',
+      itemSelectedBg: '#e6f7ff',
+      itemSelectedColor: '#1677ff',
+      itemHoverBg: '#f5f5f5',
     },
     Button: {
       borderRadius: 6,

@@ -101,7 +101,7 @@ const RealTypstPreview: React.FC<RealTypstPreviewProps> = ({
     console.log('自动编译启用:', autoCompileEnabled);
     console.log('WebSocket连接状态:', isConnected);
 
-    if (autoCompileEnabled && content.trim() && isConnected) {
+    if (autoCompileEnabled && content.trim()) {
       // 防抖编译
       if (compileTimeoutRef.current) {
         clearTimeout(compileTimeoutRef.current);
@@ -117,7 +117,7 @@ const RealTypstPreview: React.FC<RealTypstPreviewProps> = ({
         clearTimeout(compileTimeoutRef.current);
       }
     };
-  }, [content, autoCompileEnabled, isConnected]);
+  }, [content, autoCompileEnabled]);
 
   const handleCompileResult = (result: CompileResult) => {
     setCompiledPDF(result.pdf);

@@ -30,8 +30,8 @@ import {
   FileTextOutlined,
   StarOutlined,
   ShareAltOutlined,
-  MoreOutlined,
 } from '@ant-design/icons';
+import { photovoltaicAIService } from '@/services/photovoltaicAiService';
 
 const { TextArea } = Input;
 const { Text, Paragraph } = Typography;
@@ -49,7 +49,10 @@ const QAChat: React.FC = () => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [loading, setLoading] = useState(false);
+  const [projectContext, setProjectContext] = useState(photovoltaicAIService.getCachedInput());
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const configReady = Boolean(photovoltaicAIService.getConfig().apiKey);
+  const normativeReferences = ['GB50009-2012', 'GB50797-2012', 'GB50017-2017'];
 
   // 滚动到最新消息
   const scrollToBottom = () => {
@@ -59,6 +62,10 @@ const QAChat: React.FC = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  const refreshProjectContext = () => {
+    setProjectContext(photovoltaicAIService.getCachedInput());
+  };
 
   // 发送消息
   const handleSend = async () => {
@@ -84,33 +91,31 @@ const QAChat: React.FC = () => {
     setLoading(true);
 
     try {
-      // 模拟AI回复 - 实际项目中这里应该调用RAGFlow API
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      const config = photovoltaicAIService.getConfig();
+      if (!config.apiKey) {
+        throw new Error('MiniMax API 尚未配置，请前往系统设置填写密钥');
+      }
 
-      const aiResponse = `根据您的问题"${userMessage.content}"，我为您提供以下专业建议：
-
-这是一个关于工程建设领域的专业问题。基于相关规范和最佳实践，建议您考虑以下几个方面：
-
-1. **技术规范遵循**：确保符合国家相关标准和行业规范
-2. **安全性评估**：进行全面的安全风险评估
-3. **成本效益分析**：综合考虑投入产出比
-4. **可持续发展**：关注环境影响和长期效益
-
-如需更详细的分析，建议您上传相关文档或提供更多具体信息。`;
-
+      const aiResponse = await photovoltaicAIService.askExpert(userMessage.content);
       setMessages(prev =>
         prev.map(msg =>
           msg.id === assistantMessage.id
-            ? { ...msg, content: aiResponse, loading: false, references: ['工程建设规范 GB50157-2013', '建筑法规汇编 2023版'] }
+            ? {
+                ...msg,
+                content: aiResponse.content,
+                loading: false,
+                references: normativeReferences
+              }
             : msg
         )
       );
+      refreshProjectContext();
     } catch (error) {
       console.error('Failed to get AI response:', error);
       setMessages(prev =>
         prev.map(msg =>
           msg.id === assistantMessage.id
-            ? { ...msg, content: '抱歉，AI助手暂时无法回应，请稍后重试。', loading: false }
+            ? { ...msg, content: (error as Error).message || '抱歉，AI助手暂时无法回应，请稍后重试。', loading: false }
             : msg
         )
       );
@@ -131,10 +136,10 @@ const QAChat: React.FC = () => {
 
   // 快捷问题建议
   const quickQuestions = [
-    "如何进行工程项目的风险评估？",
-    "建筑施工安全规范有哪些要点？",
-    "工程造价控制的最佳实践是什么？",
-    "绿色建筑认证流程怎么做？",
+    '冬季施工需要重点控制哪些焊接与混凝土措施？',
+    '如何按照GB50797-2012完善结构设计描述？',
+    '请给出项目投资回收期和收益率估算思路。',
+    '光伏组件选型时需要关注哪些荷载及安全等级参数？'
   ];
 
   return (
@@ -146,30 +151,31 @@ const QAChat: React.FC = () => {
             title={
               <Space>
                 <RobotOutlined style={{ color: '#1677ff' }} />
-                博创电力 AI 助手
-                <Tag color="green">在线</Tag>
+                MiniMax 光伏可研助手
+                <Tag color={configReady ? 'green' : 'orange'}>
+                  {configReady ? '已连接' : '待配置'}
+                </Tag>
               </Space>
             }
             extra={
               <Space>
-                <Button icon={<ReloadOutlined />} size="small">
-                  刷新
+                <Button icon={<ReloadOutlined />} size="small" onClick={refreshProjectContext}>
+                  同步项目
                 </Button>
                 <Button icon={<ClearOutlined />} size="small" onClick={handleClear}>
                   清空
                 </Button>
-                <Button icon={<MoreOutlined />} size="small" type="text">
-                  更多
-                </Button>
               </Space>
             }
             style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
-            bodyStyle={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              padding: 0,
-              overflow: 'hidden'
+            styles={{
+              body: {
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                padding: 0,
+                overflow: 'hidden',
+              }
             }}
           >
             {/* 对话消息区域 */}
@@ -187,9 +193,9 @@ const QAChat: React.FC = () => {
                     image={<RobotOutlined style={{ fontSize: '48px', color: '#1677ff' }} />}
                     description={
                       <div>
-                        <Text type="secondary">欢迎使用博创电力AI助手</Text>
+                        <Text type="secondary">欢迎使用光伏项目可研助手</Text>
                         <br />
-                        <Text type="secondary">专注于工程建设行业的智能问答</Text>
+                        <Text type="secondary">聚焦《光伏项目可行性研究报告》撰写</Text>
                       </div>
                     }
                   />
@@ -328,7 +334,7 @@ const QAChat: React.FC = () => {
                 <TextArea
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
-                  placeholder="输入您的问题，支持工程建设、规范标准、项目管理等专业咨询..."
+                  placeholder="输入您的问题，支持光伏技术方案、施工措施、投资分析等专业咨询..."
                   autoSize={{ minRows: 1, maxRows: 4 }}
                   onPressEnter={(e) => {
                     if (!e.shiftKey) {
@@ -369,60 +375,51 @@ const QAChat: React.FC = () => {
         {/* 右侧：功能面板 */}
         <Col span={6} style={{ height: '100%' }}>
           <Space direction="vertical" style={{ width: '100%', height: '100%' }}>
-            {/* 智能提示 */}
-            <Card title="智能建议" size="small">
+            <Card title="项目上下文" size="small">
+              <Space direction="vertical" style={{ width: '100%' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Text type="secondary">项目</Text>
+                  <Text strong style={{ textAlign: 'right' }}>{projectContext.basic.projectName}</Text>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Text type="secondary">地点/规模</Text>
+                  <Text strong>{projectContext.basic.location} / {projectContext.basic.capacityKw}kW</Text>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Text type="secondary">施工季节</Text>
+                  <Text strong>{projectContext.construction.season}</Text>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <Text type="secondary">钢材/防腐</Text>
+                  <Text strong>{projectContext.construction.steelType} / {projectContext.construction.antiCorrosion}</Text>
+                </div>
+              </Space>
+            </Card>
+
+            <Card title="行业规范" size="small">
               <Space direction="vertical" style={{ width: '100%' }}>
                 <Alert
-                  message="专业领域"
-                  description="我擅长工程建设、规范标准、项目管理、安全评估等专业咨询"
                   type="info"
                   showIcon
-                  style={{ fontSize: '12px' }}
+                  description="回答内容默认引用以下强制性标准"
                 />
-                <Button type="dashed" block size="small" onClick={() => handleQuickInput("请介绍一下最新的建筑安全规范")}>
-                  建筑安全规范
-                </Button>
-                <Button type="dashed" block size="small" onClick={() => handleQuickInput("工程项目成本控制方法有哪些？")}>
-                  成本控制方法
-                </Button>
-                <Button type="dashed" block size="small" onClick={() => handleQuickInput("如何进行施工质量管理？")}>
-                  质量管理
-                </Button>
+                <Space wrap>
+                  {normativeReferences.map(ref => (
+                    <Tag key={ref} icon={<FileTextOutlined />} color="blue">
+                      {ref}
+                    </Tag>
+                  ))}
+                </Space>
               </Space>
             </Card>
 
-            {/* 会话统计 */}
-            <Card title="会话统计" size="small">
+            <Card title="高频咨询" size="small">
               <Space direction="vertical" style={{ width: '100%' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Text type="secondary">消息数量</Text>
-                  <Text strong>{messages.length}</Text>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Text type="secondary">会话时长</Text>
-                  <Text strong>
-                    {messages.length > 0 ? '5分钟' : '0分钟'}
-                  </Text>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <Text type="secondary">AI响应</Text>
-                  <Text strong style={{ color: '#52c41a' }}>正常</Text>
-                </div>
-              </Space>
-            </Card>
-
-            {/* 相关功能 */}
-            <Card title="相关功能" size="small">
-              <Space direction="vertical" style={{ width: '100%' }}>
-                <Button block size="small" icon={<FileTextOutlined />}>
-                  标准规范搜索
-                </Button>
-                <Button block size="small" icon={<FileTextOutlined />}>
-                  模板下载
-                </Button>
-                <Button block size="small" icon={<FileTextOutlined />}>
-                  项目推荐书
-                </Button>
+                {quickQuestions.map((question, index) => (
+                  <Button key={index} type="dashed" block size="small" onClick={() => handleQuickInput(question)}>
+                    {question}
+                  </Button>
+                ))}
               </Space>
             </Card>
           </Space>

@@ -23,6 +23,7 @@ class TinymistService {
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 5;
   private reconnectDelay = 2000;
+  private wsDisabled = false;
   private listeners: Map<string, Function[]> = new Map();
 
   constructor() {
@@ -40,6 +41,10 @@ class TinymistService {
    * 连接WebSocket服务器
    */
   async connect(): Promise<void> {
+    if (this.wsDisabled) {
+      return Promise.reject(new Error('Tinymist WebSocket 已禁用'));
+    }
+
     return new Promise((resolve, reject) => {
       try {
         this.ws = new WebSocket(this.wsUrl);
@@ -99,6 +104,10 @@ class TinymistService {
    * 尝试重新连接
    */
   private attemptReconnect(): void {
+    if (this.wsDisabled) {
+      return;
+    }
+
     if (this.reconnectAttempts < this.maxReconnectAttempts) {
       this.reconnectAttempts++;
       console.log(`尝试重新连接 (${this.reconnectAttempts}/${this.maxReconnectAttempts})`);
@@ -108,6 +117,10 @@ class TinymistService {
           console.error('重新连接失败:', error);
         });
       }, this.reconnectDelay);
+    } else {
+      console.warn('达到最大重连次数，将禁用WebSocket');
+      this.wsDisabled = true;
+      this.emit('error', { message: 'Tinymist WebSocket 不可用，请启动后台服务或稍后重试。' });
     }
   }
 
@@ -216,20 +229,24 @@ class TinymistService {
       });
     } else {
       // 回退到HTTP API
-      const response = await fetch(`${this.serverUrl}/api/tinymist/compile`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ content, filename }),
-      });
+      try {
+        const response = await fetch(`${this.serverUrl}/api/tinymist/compile`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ content, filename }),
+        });
 
-      if (!response.ok) {
-        throw new Error(`编译失败: ${response.statusText}`);
+        if (!response.ok) {
+          throw new Error(`编译失败: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        return data.result;
+      } catch (error) {
+        throw new Error('无法连接到 Tinymist 服务，请确认本地服务器已启动');
       }
-
-      const data = await response.json();
-      return data.result;
     }
   }
 

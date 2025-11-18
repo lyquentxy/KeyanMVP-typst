@@ -1,7 +1,6 @@
 /**
- * 首页概览组件
- * 展示系统概览、统计数据、快速功能入口
- * 布局：连接状态栏 + 统计卡片组 + 功能卡片组 + 快速开始指南
+ * 首页概览 - 光伏项目可研助手
+ * 展示 MiniMax 模块状态、章节指标、功能入口和快速指南
  */
 
 import React, { useState, useEffect } from 'react';
@@ -19,10 +18,9 @@ import {
   Tag,
   Divider,
   List,
-  Badge,
+  Badge
 } from '@/utils/antdComponents';
 import {
-  DatabaseOutlined,
   FileTextOutlined,
   RobotOutlined,
   MessageOutlined,
@@ -31,82 +29,92 @@ import {
   RightOutlined,
   PlayCircleOutlined,
   SettingOutlined,
+  ThunderboltOutlined
 } from '@ant-design/icons';
-import { ragflowApi } from '@/services/ragflowApi';
-import type { SystemStats, ServiceStatus } from '@/types/ragflow';
+import { photovoltaicAIService, SAMPLE_INPUT } from '@/services/photovoltaicAiService';
+import type { ModuleStatus } from '@/types/aiModule';
 
 const { Title, Text, Paragraph } = Typography;
+
+const normativeReferences = ['GB50009-2012', 'GB50797-2012', 'GB50017-2017'];
+
+const capabilityCards = [
+  {
+    title: 'Typst 编辑器',
+    description: '实时编译屋顶分布式光伏可研报告，保证章节编号和排版完全符合项目规范。',
+    icon: <FileTextOutlined />,
+    actionText: '打开编辑器',
+    action: '/typst-editor',
+  },
+  {
+    title: 'MiniMax AI 助手',
+    description: '基于 docx/typst-ai-module-design.md 的 DataValidator + PromptGenerator 流程生成高质量章节。',
+    icon: <RobotOutlined />,
+    actionText: '启动助手',
+    action: '/typst-editor',
+  },
+  {
+    title: '专家问答',
+    description: '在 QA 界面随时咨询冬季施工措施、投资估算、风险分析等专业问题。',
+    icon: <MessageOutlined />,
+    actionText: '进入对话',
+    action: '/qa',
+  }
+];
+
+const moduleMetrics = [
+  { title: '章节覆盖', value: 7, suffix: '章', icon: <FileTextOutlined />, color: '#1677ff' },
+  { title: '冬季施工要点', value: 4, suffix: '项', icon: <CheckCircleOutlined />, color: '#52c41a' },
+  { title: '强制规范引用', value: normativeReferences.length, suffix: '部', icon: <CloudServerOutlined />, color: '#faad14' },
+  { title: '模板迭代', value: 'v1.0', icon: <ThunderboltOutlined />, color: '#722ed1' }
+];
 
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [serviceStatus, setServiceStatus] = useState<ServiceStatus>({
-    ragflow_connected: false,
-    last_check_time: '',
-  });
-  const [systemStats, setSystemStats] = useState<SystemStats>({
-    dataset_count: 0,
-    document_count: 0,
-    agent_count: 0,
-    chat_count: 0,
-    total_chunks: 0,
-    total_tokens: 0,
-  });
+  const [moduleStatus, setModuleStatus] = useState<ModuleStatus | null>(null);
+  const [projectContext, setProjectContext] = useState(SAMPLE_INPUT);
 
-  // 获取服务状态和统计数据
   useEffect(() => {
-    fetchData();
+    refreshStatus();
+    setProjectContext(photovoltaicAIService.getCachedInput());
   }, []);
 
-  const fetchData = async () => {
+  const refreshStatus = async () => {
     setLoading(true);
     try {
-      // 并行请求服务状态和统计数据
-      const [statusResponse, statsResponse] = await Promise.allSettled([
-        ragflowApi.checkConnection(),
-        ragflowApi.getSystemStats(),
-      ]);
-
-      if (statusResponse.status === 'fulfilled') {
-        setServiceStatus(statusResponse.value);
-      }
-
-      if (statsResponse.status === 'fulfilled' && statsResponse.value.data) {
-        setSystemStats(statsResponse.value.data);
-      }
-    } catch (error) {
-      console.error('Failed to fetch data:', error);
+      const status = await photovoltaicAIService.getModuleStatus();
+      setModuleStatus(status);
     } finally {
       setLoading(false);
     }
   };
 
-  // 快速开始指南数据
   const quickStartItems = [
     {
-      title: '开始AI对话',
-      description: '与博创电力AI助手进行专业咨询',
-      action: () => navigate('/qa'),
-      completed: systemStats?.chat_count > 0,
+      title: '配置 MiniMax API',
+      description: '在系统设置中填写 API Key、Base URL 与模型参数。',
+      action: () => navigate('/settings'),
+      completed: moduleStatus?.connected ?? false,
     },
     {
-      title: '搜索标准规范',
-      description: '查询行业标准和建设规范',
-      action: () => navigate('/standard'),
+      title: '录入项目数据',
+      description: '在 Typst 编辑器的 AI 助手中填写项目概况、技术参数和财务数据。',
+      action: () => navigate('/typst-editor'),
       completed: false,
     },
     {
-      title: '工程计算工具',
-      description: '使用AI辅助进行工程计算',
-      action: () => navigate('/calc'),
+      title: '生成章节内容',
+      description: '调用 MiniMax 模块生成技术方案、施工组织、投资分析等章节。',
+      action: () => navigate('/typst-editor'),
       completed: false,
     },
     {
-      title: '下载项目模板',
-      description: '获取专业的工程项目文档模板',
-      action: () => navigate('/template-download'),
+      title: '导出 Typst PDF',
+      description: '通过 Typst 编译器预览排版并导出正式的可行性研究报告。',
+      action: () => navigate('/typst-editor'),
       completed: false,
-    },
+    }
   ];
 
   const completedSteps = quickStartItems.filter(item => item.completed).length;
@@ -114,297 +122,128 @@ const Home: React.FC = () => {
 
   return (
     <div className="page-container fade-in">
-      {/* 页面标题 */}
-      <div style={{ marginBottom: '24px' }}>
-        <Title level={2} style={{ margin: 0 }}>
-          博创电力 AI 系统概览
-        </Title>
+      <div style={{ marginBottom: 24 }}>
+        <Title level={2} style={{ margin: 0 }}>光伏项目可研助手概览</Title>
         <Text type="secondary">
-          专注于工程建设行业的AI助手平台，提供智能问答、标准规范、工程计算等专业服务
+          聚焦 docx/应用构想.md 定义的光伏项目可行性研究报告结构，协同 MiniMax 模型与 Typst 模板。
         </Text>
       </div>
 
-      {/* 服务连接状态栏 */}
-      <Card style={{ marginBottom: '24px' }}>
+      <Card style={{ marginBottom: 24 }}>
         <Row align="middle" justify="space-between">
           <Col>
             <Space align="center">
-              <CloudServerOutlined
-                style={{
-                  fontSize: '24px',
-                  color: serviceStatus.ragflow_connected ? '#52c41a' : '#ff4d4f',
-                }}
-              />
+              <CloudServerOutlined style={{ fontSize: 24, color: moduleStatus?.connected ? '#52c41a' : '#ff4d4f' }} />
               <div>
-                <Text strong>RAGFlow服务状态</Text>
+                <Text strong>MiniMax 模块状态</Text>
                 <br />
                 <Space>
-                  <Badge
-                    status={serviceStatus.ragflow_connected ? 'success' : 'error'}
-                    text={serviceStatus.ragflow_connected ? '已连接' : '未连接'}
-                  />
-                  {serviceStatus.ragflow_version && (
-                    <Tag>v{serviceStatus.ragflow_version}</Tag>
-                  )}
+                  <Badge status={moduleStatus?.connected ? 'success' : 'warning'} text={moduleStatus?.connected ? '已连接' : '待配置'} />
+                  {moduleStatus?.model && <Tag>{moduleStatus.model}</Tag>}
                 </Space>
               </div>
             </Space>
           </Col>
           <Col>
             <Space>
-              <Text type="secondary">
-                最后检查: {serviceStatus.last_check_time
-                  ? new Date(serviceStatus.last_check_time).toLocaleString()
-                  : '未知'
-                }
-              </Text>
-              <Button onClick={fetchData} loading={loading}>
-                刷新状态
-              </Button>
-              {!serviceStatus.ragflow_connected && (
-                <Button
-                  type="primary"
-                  onClick={() => navigate('/settings')}
-                >
-                  配置服务
+              <Text type="secondary">最后检查：{moduleStatus?.lastChecked ? new Date(moduleStatus.lastChecked).toLocaleString() : '未检测'}</Text>
+              <Button onClick={refreshStatus} loading={loading}>刷新状态</Button>
+              {!moduleStatus?.connected && (
+                <Button type="primary" icon={<SettingOutlined />} onClick={() => navigate('/settings')}>
+                  前往设置
                 </Button>
               )}
             </Space>
           </Col>
         </Row>
 
-        {serviceStatus.error_message && (
+        {!moduleStatus?.connected && (
           <Alert
-            message="连接错误"
-            description={serviceStatus.error_message}
-            type="error"
+            style={{ marginTop: 16 }}
+            type="warning"
             showIcon
-            style={{ marginTop: '16px' }}
+            message="MiniMax API 尚未配置"
+            description="请参考 docx/API密钥.md 获取密钥后在系统设置中填写。"
           />
         )}
       </Card>
 
-      {/* 统计卡片组 - 4等分布局 */}
-      <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="知识库数量"
-              value={systemStats?.dataset_count || 0}
-              prefix={<DatabaseOutlined />}
-              valueStyle={{ color: '#1677ff' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="文档总数"
-              value={systemStats?.document_count || 0}
-              prefix={<FileTextOutlined />}
-              valueStyle={{ color: '#52c41a' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="智能体数量"
-              value={systemStats?.agent_count || 0}
-              prefix={<RobotOutlined />}
-              valueStyle={{ color: '#faad14' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={6}>
-          <Card>
-            <Statistic
-              title="对话总数"
-              value={systemStats?.chat_count || 0}
-              prefix={<MessageOutlined />}
-              valueStyle={{ color: '#722ed1' }}
-            />
-          </Card>
-        </Col>
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        {moduleMetrics.map(metric => (
+          <Col key={metric.title} xs={24} sm={12} lg={6}>
+            <Card>
+              <Statistic
+                title={metric.title}
+                value={metric.value}
+                suffix={metric.suffix}
+                prefix={metric.icon}
+                valueStyle={{ color: metric.color }}
+              />
+            </Card>
+          </Col>
+        ))}
       </Row>
 
-      {/* 功能卡片组 - 3等分布局 */}
-      <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
-        <Col xs={24} md={8}>
-          <Card
-            hoverable
-            actions={[
-              <Button
-                type="link"
-                icon={<RightOutlined />}
-                onClick={() => navigate('/chapter-manager')}
-              >
-                进入管理
-              </Button>,
-            ]}
-          >
-            <Card.Meta
-              avatar={
-                <div
-                  style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '12px',
-                    background: 'linear-gradient(135deg, #1677ff, #69c0ff)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white',
-                    fontSize: '24px',
-                  }}
-                >
-                  <FileTextOutlined />
-                </div>
-              }
-              title="章节管理"
-              description={
-                <div>
-                  <Paragraph ellipsis={{ rows: 2 }}>
-                    上传和处理DOCX文档，智能解析章节结构，管理文档内容块
-                  </Paragraph>
-                  <Space>
-                    <Text type="secondary">文档总数: {systemStats?.document_count || 0}</Text>
-                    <Text type="secondary">内容块: {systemStats?.total_chunks || 0}</Text>
-                  </Space>
-                </div>
-              }
-            />
-          </Card>
-        </Col>
-
-        <Col xs={24} md={8}>
-          <Card
-            hoverable
-            actions={[
-              <Button
-                type="link"
-                icon={<RightOutlined />}
-                onClick={() => navigate('/agent-list')}
-              >
-                查看智能体
-              </Button>,
-            ]}
-          >
-            <Card.Meta
-              avatar={
-                <div
-                  style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '12px',
-                    background: 'linear-gradient(135deg, #52c41a, #95de64)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white',
-                    fontSize: '24px',
-                  }}
-                >
-                  <RobotOutlined />
-                </div>
-              }
-              title="智能体对话"
-              description={
-                <div>
-                  <Paragraph ellipsis={{ rows: 2 }}>
-                    基于文档内容创建智能体，提供专业的文档问答和内容分析
-                  </Paragraph>
-                  <Space>
-                    <Text type="secondary">智能体: {systemStats?.agent_count || 0}</Text>
-                    <Text type="secondary">对话: {systemStats?.chat_count || 0}</Text>
-                  </Space>
-                </div>
-              }
-            />
-          </Card>
-        </Col>
-
-        <Col xs={24} md={8}>
-          <Card
-            hoverable
-            actions={[
-              <Button
-                type="link"
-                icon={<RightOutlined />}
-                onClick={() => navigate('/settings')}
-              >
-                系统设置
-              </Button>,
-            ]}
-          >
-            <Card.Meta
-              avatar={
-                <div
-                  style={{
-                    width: '48px',
-                    height: '48px',
-                    borderRadius: '12px',
-                    background: 'linear-gradient(135deg, #faad14, #ffd666)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: 'white',
-                    fontSize: '24px',
-                  }}
-                >
-                  <SettingOutlined />
-                </div>
-              }
-              title="文档导出"
-              description={
-                <div>
-                  <Paragraph ellipsis={{ rows: 2 }}>
-                    配置RAGFlow服务连接，管理系统设置和用户偏好
-                  </Paragraph>
-                  <Space>
-                    <Text type="secondary">
-                      状态: {serviceStatus.ragflow_connected ? '已连接' : '未连接'}
-                    </Text>
-                    <Text type="secondary">Token: {systemStats?.total_tokens || 0}</Text>
-                  </Space>
-                </div>
-              }
-            />
-          </Card>
-        </Col>
+      <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+        {capabilityCards.map(card => (
+          <Col xs={24} md={8} key={card.title}>
+            <Card
+              hoverable
+              actions={[
+                <Button type="link" icon={<RightOutlined />} onClick={() => navigate(card.action)}>
+                  {card.actionText}
+                </Button>,
+              ]}
+            >
+              <Card.Meta
+                avatar={
+                  <div
+                    style={{
+                      width: 48,
+                      height: 48,
+                      borderRadius: 12,
+                      background: 'linear-gradient(135deg, #1677ff, #69c0ff)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#fff',
+                      fontSize: 24
+                    }}
+                  >
+                    {card.icon}
+                  </div>
+                }
+                title={card.title}
+                description={<Paragraph ellipsis={{ rows: 3 }}>{card.description}</Paragraph>}
+              />
+            </Card>
+          </Col>
+        ))}
       </Row>
 
-      {/* 快速开始指南 */}
       <Card
         title={
           <Space>
             <PlayCircleOutlined />
             快速开始指南
-            <Tag color="blue">{completedSteps}/{quickStartItems.length}步已完成</Tag>
+            <Tag color="blue">{completedSteps}/{quickStartItems.length} 步</Tag>
           </Space>
         }
       >
         <Row gutter={[24, 24]}>
           <Col xs={24} lg={16}>
-            <div style={{ marginBottom: '16px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
+            <div style={{ marginBottom: 16 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
                 <Text>完成进度</Text>
                 <Text>{progressPercent}%</Text>
               </div>
-              <Progress
-                percent={progressPercent}
-                strokeColor={{
-                  '0%': '#108ee9',
-                  '100%': '#87d068',
-                }}
-              />
+              <Progress percent={progressPercent} strokeColor={{ '0%': '#108ee9', '100%': '#87d068' }} />
             </div>
 
-            <div className="system-display-scroll" style={{ maxHeight: '300px' }}>
-              <List
-                itemLayout="horizontal"
-                dataSource={quickStartItems}
-                renderItem={(item, index) => (
+            <List
+              itemLayout="horizontal"
+              dataSource={quickStartItems}
+              renderItem={(item, index) => (
                 <List.Item
                   actions={[
                     <Button
@@ -420,71 +259,60 @@ const Home: React.FC = () => {
                     avatar={
                       <div
                         style={{
-                          width: '32px',
-                          height: '32px',
+                          width: 32,
+                          height: 32,
                           borderRadius: '50%',
                           background: item.completed ? '#52c41a' : '#1677ff',
-                          color: 'white',
+                          color: '#fff',
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'center',
-                          fontWeight: 'bold',
+                          justifyContent: 'center'
                         }}
                       >
-                        {item.completed ? (
-                          <CheckCircleOutlined />
-                        ) : (
-                          <span>{index + 1}</span>
-                        )}
+                        {item.completed ? <CheckCircleOutlined /> : index + 1}
                       </div>
                     }
-                    title={
-                      <Space>
-                        {item.title}
-                        {item.completed && (
-                          <Tag color="success">
-                            已完成
-                          </Tag>
-                        )}
-                      </Space>
-                    }
+                    title={<Space>{item.title}{item.completed && <Tag color="success">完成</Tag>}</Space>}
                     description={item.description}
                   />
                 </List.Item>
               )}
-              />
-            </div>
+            />
           </Col>
 
           <Col xs={24} lg={8}>
             <Card size="small" title="系统资源" style={{ background: '#fafafa' }}>
               <Space direction="vertical" style={{ width: '100%' }}>
                 <div>
-                  <Text type="secondary">内容块总数</Text>
+                  <Text type="secondary">项目上下文</Text>
                   <br />
-                  <Text strong style={{ fontSize: '20px' }}>
-                    {systemStats?.total_chunks?.toLocaleString() || 0}
-                  </Text>
+                  <Text strong>{projectContext.basic.projectName}</Text>
+                  <br />
+                  <Text type="secondary">{projectContext.basic.location} · {projectContext.basic.capacityKw}kW</Text>
                 </div>
                 <Divider style={{ margin: '8px 0' }} />
                 <div>
-                  <Text type="secondary">Token总数</Text>
+                  <Text type="secondary">施工条件</Text>
                   <br />
-                  <Text strong style={{ fontSize: '20px' }}>
-                    {systemStats?.total_tokens?.toLocaleString() || 0}
-                  </Text>
+                  <Text strong>{projectContext.construction.season} · {projectContext.construction.steelType} · {projectContext.construction.antiCorrosion}</Text>
                 </div>
                 <Divider style={{ margin: '8px 0' }} />
                 <div>
-                  <Text type="secondary">服务状态</Text>
+                  <Text type="secondary">引用规范</Text>
+                  <br />
+                  <Space wrap>
+                    {normativeReferences.map(ref => (
+                      <Tag key={ref} color="blue">{ref}</Tag>
+                    ))}
+                  </Space>
+                </div>
+                <Divider style={{ margin: '8px 0' }} />
+                <div>
+                  <Text type="secondary">模块状态</Text>
                   <br />
                   <Badge
-                    status={serviceStatus.ragflow_connected ? 'success' : 'error'}
-                    text={
-                      <Text strong>
-                        {serviceStatus.ragflow_connected ? 'RAGFlow已连接' : '服务未连接'}
-                      </Text>
-                    }
+                    status={moduleStatus?.connected ? 'success' : 'warning'}
+                    text={<Text strong>{moduleStatus?.connected ? '可调用 MiniMax' : '待配置'}</Text>}
                   />
                 </div>
               </Space>

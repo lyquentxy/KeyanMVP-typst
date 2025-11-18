@@ -2,7 +2,7 @@
   "name": "typst-editor-frontend",
   "version": "1.0.0",
   "type": "module",
-  "description": "Typst编辑器前端 - 基于React + TypeScript + Ant Design 5.x的智能文档编辑系统，集成RAGFlow智能体",
+  "description": "Typst编辑器前端 - 基于React + TypeScript + Ant Design 5.x的光伏可研文档系统，集成MiniMax模块",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
@@ -38,7 +38,7 @@
     "typescript",
     "ant-design",
     "typst",
-    "ragflow",
+    "minimax",
     "document-processing",
     "latex-alternative"
   ],

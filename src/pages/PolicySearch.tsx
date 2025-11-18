@@ -67,18 +67,29 @@ const PolicySearch: React.FC = () => {
 
         <Col span={8}>
           <Card title="政策时间线" size="small">
-            <Timeline>
-              <Timeline.Item dot={<ClockCircleOutlined />}>
-                <Text strong>2024年建筑法修订</Text>
-                <br />
-                <Text type="secondary" style={{ fontSize: '12px' }}>2024-01-15</Text>
-              </Timeline.Item>
-              <Timeline.Item>
-                <Text strong>绿色建筑评价标准</Text>
-                <br />
-                <Text type="secondary" style={{ fontSize: '12px' }}>2023-12-20</Text>
-              </Timeline.Item>
-            </Timeline>
+            <Timeline
+              items={[
+                {
+                  dot: <ClockCircleOutlined />,
+                  children: (
+                    <div>
+                      <Text strong>2024年建筑法修订</Text>
+                      <br />
+                      <Text type="secondary" style={{ fontSize: 12 }}>2024-01-15</Text>
+                    </div>
+                  )
+                },
+                {
+                  children: (
+                    <div>
+                      <Text strong>绿色建筑评价标准</Text>
+                      <br />
+                      <Text type="secondary" style={{ fontSize: 12 }}>2023-12-20</Text>
+                    </div>
+                  )
+                }
+              ]}
+            />
           </Card>
         </Col>
       </Row>

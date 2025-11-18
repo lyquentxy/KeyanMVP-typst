@@ -4,30 +4,13 @@
  */
 
 import React from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { ProLayout, PageContainer } from '@ant-design/pro-components';
+import type { ProLayoutProps } from '@ant-design/pro-components';
 import { Button, Badge, Space, Typography, Avatar, Dropdown } from '@/utils/antdComponents';
-import {
-  HomeOutlined,
-  EditOutlined,
-  MessageOutlined,
-  SearchOutlined,
-  CalculatorOutlined,
-  DatabaseOutlined,
-  FileProtectOutlined,
-  DownloadOutlined,
-  FileTextOutlined,
-  SwapOutlined,
-  ApartmentOutlined,
-  HeartOutlined,
-  SettingOutlined,
-  UserOutlined,
-  BellOutlined,
-  LogoutOutlined,
-} from '@ant-design/icons';
+import { UserOutlined, BellOutlined, LogoutOutlined } from '@ant-design/icons';
 import type { MenuProps } from '@/utils/antdComponents';
 import routes from '@/../config/routes';
-import defaultSettings from '@/../config/defaultSettings';
 
 const { Text } = Typography;
 
@@ -70,16 +53,18 @@ const handleUserMenuClick: MenuProps['onClick'] = ({ key }) => {
 
 const MainLayout: React.FC = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const routeConfig: ProLayoutProps['route'] = {
+    path: '/',
+    routes: routes as ProLayoutProps['route']['routes'],
+  };
 
   return (
     <ProLayout
       title="博创服务系统"
       logo="T"
       location={location}
-      route={{
-        path: '/',
-        routes: routes as any,
-      }}
+      route={routeConfig}
       navTheme="light"
       colorPrimary="#1677ff"
       layout="mix"
@@ -114,7 +99,7 @@ const MainLayout: React.FC = () => {
         src: '',
         size: 'small',
         title: '博创设计部 用户',
-        render: (_, avatarChildren) => {
+        render: (_, _avatarChildren) => {
           return (
             <Dropdown
               menu={{ items: userMenuItems, onClick: handleUserMenuClick }}
@@ -176,6 +161,19 @@ const MainLayout: React.FC = () => {
             <div>博创服务系统 v1.0</div>
             <div>© 2025 博创设计院有限公司</div>
           </div>
+        );
+      }}
+      menuItemRender={(item, dom) => {
+        if (!item.path) {
+          return dom;
+        }
+        return (
+          <span
+            onClick={() => navigate(item.path as string)}
+            style={{ display: 'flex', alignItems: 'center' }}
+          >
+            {dom}
+          </span>
         );
       }}
     >

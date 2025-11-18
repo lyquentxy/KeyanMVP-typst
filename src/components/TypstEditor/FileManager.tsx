@@ -23,6 +23,7 @@ import {
   Divider,
   Empty
 } from '@/utils/antdComponents';
+import type { MenuProps } from '@/utils/antdComponents';
 import {
   FolderOutlined,
   FileTextOutlined,
@@ -279,7 +280,7 @@ const FileManager: React.FC<FileManagerProps> = ({
   };
 
   // 文件操作菜单
-  const getFileActions = (file: FileInfo) => ({
+  const getFileActions = (file: FileInfo): MenuProps => ({
     items: [
       {
         key: 'open',
@@ -300,7 +301,7 @@ const FileManager: React.FC<FileManagerProps> = ({
         onClick: () => handleExportFile(file)
       },
       {
-        type: 'divider'
+        type: 'divider' as const
       },
       {
         key: 'delete',
@@ -425,7 +426,7 @@ const FileManager: React.FC<FileManagerProps> = ({
                         {file.metadata?.title || file.name}
                       </Text>
                       {file.metadata?.tags.map(tag => (
-                        <Tag key={tag} size="small" color="blue">
+                        <Tag key={tag} color="blue">
                           {tag}
                         </Tag>
                       ))}

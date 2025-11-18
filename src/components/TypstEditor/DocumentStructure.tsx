@@ -180,9 +180,9 @@ const DocumentStructure: React.FC<DocumentStructureProps> = ({
   };
 
   return (
-    <div style={{ padding: '16px', height: '100%', overflow: 'auto' }}>
+    <div className="doc-structure-panel">
       {/* 文档信息 */}
-      <Card size="small" style={{ marginBottom: 16 }}>
+      <Card size="small" style={{ marginBottom: 12 }}>
         <div>
           <Title level={5} style={{ margin: '0 0 8px 0' }}>
             {document.title}
@@ -202,12 +202,7 @@ const DocumentStructure: React.FC<DocumentStructureProps> = ({
       </Card>
 
       {/* 文档结构标题和章节选择 */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: 12
-      }}>
+      <div className="doc-structure-panel__actions">
         <Text strong>文档结构</Text>
         <Space>
           <Tooltip title="获取AI章节推荐">
@@ -225,7 +220,7 @@ const DocumentStructure: React.FC<DocumentStructureProps> = ({
       </div>
 
       {/* 章节选择区域 */}
-      <Card size="small" style={{ marginBottom: 12 }}>
+      <Card size="small" style={{ marginBottom: 8 }}>
         <div style={{ marginBottom: 8 }}>
           <Text strong style={{ fontSize: 12 }}>章节选择</Text>
         </div>
@@ -245,7 +240,6 @@ const DocumentStructure: React.FC<DocumentStructureProps> = ({
                     <Tag
                       color="orange"
                       icon={<RobotOutlined />}
-                      size="small"
                       style={{ marginLeft: 8 }}
                     >
                       AI
@@ -257,38 +251,41 @@ const DocumentStructure: React.FC<DocumentStructureProps> = ({
         </div>
       </Card>
 
-      <Divider style={{ margin: '12px 0' }} />
+      <div className="doc-structure-panel__scroll">
+        <Divider style={{ margin: '8px 0' }} />
 
-      {/* 章节树 */}
-      <Tree
-        treeData={buildTreeData()}
-        selectedKeys={[activeSection]}
-        showIcon={false}
-        showLine={false}
-        onSelect={(keys) => {
-          if (keys.length > 0) {
-            onSectionSelect(keys[0] as string);
-          }
-        }}
-        style={{
-          fontSize: 13
-        }}
-      />
+        {/* 章节树 */}
+        <Tree
+          treeData={buildTreeData()}
+          selectedKeys={[activeSection]}
+          showIcon={false}
+          showLine={false}
+          onSelect={(keys) => {
+            if (keys.length > 0) {
+              onSectionSelect(keys[0] as string);
+            }
+          }}
+          style={{
+            fontSize: 13,
+            paddingRight: 8
+          }}
+        />
 
-      {/* 统计信息 */}
-      <Divider style={{ margin: '16px 0' }} />
+        {/* 统计信息 */}
+        <Divider style={{ margin: '12px 0' }} />
 
-      <div style={{ fontSize: 12, color: '#666' }}>
-        <div style={{ marginBottom: 4 }}>
-          • 总字数：{document.sections
-            .filter(s => s.type !== 'chapter' || s.selected !== false)
-            .reduce((acc, section) => acc + section.content.length, 0)}
-        </div>
-        <div style={{ marginBottom: 4 }}>
-          • 已选章节：{document.sections.filter(s => s.type === 'chapter' && s.selected !== false).length} / {document.sections.filter(s => s.type === 'chapter').length}
-        </div>
-        <div>
-          • AI章节：{document.sections.filter(s => s.type === 'chapter' && s.aiAgent && s.selected !== false).length}
+        <div style={{ fontSize: 12, color: '#666', paddingBottom: 8 }}>
+          <div style={{ marginBottom: 4 }}>
+            • 总字数：{document.sections
+              .filter(s => s.type !== 'chapter' || s.selected !== false)
+              .reduce((acc, section) => acc + section.content.length, 0)}
+          </div>
+          <div style={{ marginBottom: 4 }}>
+            • 已选章节：{document.sections.filter(s => s.type === 'chapter' && s.selected !== false).length} / {document.sections.filter(s => s.type === 'chapter').length}
+          </div>
+          <div>
+            • AI章节：{document.sections.filter(s => s.type === 'chapter' && s.aiAgent && s.selected !== false).length}
+          </div>
         </div>
       </div>
     </div>

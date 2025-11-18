@@ -4,7 +4,12 @@
       "Bash(start-with-tinymist.bat:*)",
       "Bash(npm install:*)",
       "Bash(npm start)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Bash(taskkill:*)",
+      "Bash(nul:*)",
+      "Bash(netstat:*)",
+      "Bash(findstr :517)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

@@ -12,11 +12,14 @@ import {
   Modal,
   Spin,
   Tooltip,
+  Switch,
   useMessage
 } from '@/utils/antdComponents';
 import {
-  FileTextOutlined,
   PlayCircleOutlined,
+  PauseCircleOutlined,
+  ReloadOutlined,
+  DownloadOutlined,
   SaveOutlined,
   SettingOutlined,
   RobotOutlined,
@@ -26,10 +29,10 @@ import {
 
 // 组件导入
 import DocumentStructure from '@/components/TypstEditor/DocumentStructure';
-import TypstCodeEditor from '@/components/TypstEditor/TypstCodeEditor';
 import RealTypstPreview from '@/components/TypstEditor/RealTypstPreview';
-import AIAssistant from '@/components/TypstEditor/AIAssistant';
+import AICopilotPanel from '@/components/TypstEditor/AICopilotPanel';
 import GlobalSettings from '@/components/TypstEditor/GlobalSettings';
+import { CHAPTER_KEYWORDS } from '@/constants/chapterKeywords';
 import { photovoltaicAIService } from '@/services/photovoltaicAiService';
 import type { ChapterType } from '@/types/aiModule';
 
@@ -61,25 +64,18 @@ interface DocumentData {
   };
 }
 
-const editorPaneStyle: React.CSSProperties = {
-  flex: '1 1 50%',
-  minWidth: 400,
-  padding: '16px',
-  display: 'flex',
-  flexDirection: 'column',
-  height: '100%',
-  overflow: 'hidden',
-};
-
 const previewPaneStyle: React.CSSProperties = {
-  flex: '1 1 50%',
-  minWidth: 400,
+  flex: '1 1 auto',
+  minWidth: 520,
   padding: '16px',
   display: 'flex',
   flexDirection: 'column',
   height: '100%',
+  minHeight: 0,
   overflow: 'hidden',
-  borderLeft: '1px solid var(--color-border-secondary)',
+  background: '#fff',
+  borderRadius: 12,
+  boxShadow: '0 1px 3px rgba(15, 23, 42, 0.12)'
 };
 
 // 移除内联样式，使用CSS类
@@ -94,22 +90,22 @@ const workbenchContentStyle: React.CSSProperties = {
   display: 'flex',
   flex: 1,
   overflow: 'hidden',
+  gap: 16,
+  padding: '0 16px 16px 0',
+  minHeight: 0
 };
 
-const editorWrapperStyle: React.CSSProperties = {
-  flex: 1,
-  overflow: 'hidden',
+const aiAssistantPaneStyle: React.CSSProperties = {
+  width: 420,
+  minWidth: 360,
   height: '100%',
-};
-
-const CHAPTER_KEYWORDS: Record<ChapterType, string> = {
-  project_overview: '项目概况',
-  construction_conditions: '建设条件分析',
-  technical_solution: '技术方案',
-  construction_organization: '施工组织设计',
-  investment_analysis: '财务评价',
-  risk_analysis: '风险分析',
-  conclusion: '结论与建议'
+  minHeight: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  background: '#fff',
+  borderRadius: 12,
+  boxShadow: '0 1px 3px rgba(15, 23, 42, 0.12)',
+  overflow: 'hidden'
 };
 
 const TypstEditor: React.FC = () => {
@@ -566,7 +562,7 @@ nasa、mete、sgis
   const [isPreviewVisible, setIsPreviewVisible] = useState(true);
   const [isCompiling, setIsCompiling] = useState(false);
   const [, setCompiledPdf] = useState<string>('');
-  const [showAIAssistant, setShowAIAssistant] = useState(false);
+  const [isAISidebarVisible, setIsAISidebarVisible] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [messageApi, contextHolder] = useMessage();
 
@@ -749,14 +745,6 @@ nasa、mete、sgis
       <div className="typst-editor workbench">
         {/* 顶部工具栏 */}
         <div className="workbench-header">
-          <div>
-            <Title level={4} style={{ margin: 0, display: 'inline-block', marginRight: 16 }}>
-              <BookOutlined style={{ marginRight: 8 }} />
-              {document.title}
-            </Title>
-            <Text type="secondary">Typst 实时编辑器</Text>
-          </div>
-
           <Space>
             <Tooltip title="编译预览">
               <Button
@@ -775,10 +763,11 @@ nasa、mete、sgis
               </Button>
             </Tooltip>
 
-            <Tooltip title="AI助手">
+            <Tooltip title={isAISidebarVisible ? '收起AI助手' : '展开AI助手'}>
               <Button
                 icon={<RobotOutlined />}
-                onClick={() => setShowAIAssistant(true)}
+                type={isAISidebarVisible ? 'default' : 'dashed'}
+                onClick={() => setIsAISidebarVisible(prev => !prev)}
               >
                 AI助手
               </Button>
@@ -816,47 +805,42 @@ nasa、mete、sgis
             />
           </aside>
 
-          {/* 中间编辑器 + 右侧预览 */}
+          {/* 中间预览 + 右侧AI助手 */}
           <section className="workbench-content" style={workbenchContentStyle}>
-            <div className="editor-pane" style={editorPaneStyle}>
-              <div style={{ marginBottom: 12, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Text strong>
-                  <FileTextOutlined style={{ marginRight: 8 }} />
-                  {getCurrentSection()?.title || '请选择章节'}
-                </Text>
-
-                {getCurrentSection()?.type === 'chapter' && (
-                  <Button
-                    size="small"
-                    icon={<RobotOutlined />}
-                    onClick={() => setShowAIAssistant(true)}
-                  >
-                    AI优化
-                  </Button>
-                )}
-              </div>
-
-              <div style={editorWrapperStyle}>
-                <TypstCodeEditor
-                  content={getCurrentSection()?.content || ''}
-                  onChange={(content) => {
-                    if (getCurrentSection()) {
-                      updateSectionContent(getCurrentSection()!.id, content);
-                    }
-                  }}
-                  readonly={!getCurrentSection()}
-                />
-              </div>
-            </div>
-
-            {isPreviewVisible && (
+            {isPreviewVisible ? (
               <div className="preview-pane" style={previewPaneStyle}>
-                <div style={{ marginBottom: 12 }}>
+                <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Text strong>
                     <EyeOutlined style={{ marginRight: 8 }} />
                     实时预览
                     {isCompiling && <Spin size="small" style={{ marginLeft: 8 }} />}
                   </Text>
+                  <Space size="middle" align="center">
+                    <Tooltip title="自动编译">
+                      <Switch
+                        size="small"
+                        checked={isPreviewVisible}
+                        onChange={() => setIsPreviewVisible(prev => !prev)}
+                        checkedChildren={<PlayCircleOutlined />}
+                        unCheckedChildren={<PauseCircleOutlined />}
+                      />
+                    </Tooltip>
+                    <Button
+                      size="small"
+                      icon={<ReloadOutlined />}
+                      onClick={compilePreview}
+                      loading={isCompiling}
+                    >
+                      刷新
+                    </Button>
+                    <Button
+                      size="small"
+                      icon={<DownloadOutlined />}
+                      onClick={saveDocument}
+                    >
+                      导出
+                    </Button>
+                  </Space>
                 </div>
 
                 <div style={{ flex: 1, overflow: 'hidden' }}>
@@ -867,27 +851,43 @@ nasa、mete、sgis
                   />
                 </div>
               </div>
+            ) : (
+              <div
+                style={{
+                  flex: 1,
+                  minWidth: 480,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '1px dashed var(--color-border)',
+                  borderRadius: 12,
+                  background: '#fff'
+                }}
+              >
+                <Text type="secondary">预览已隐藏，点击顶部按钮重新显示。</Text>
+              </div>
+            )}
+
+            {isAISidebarVisible && (
+              <div className="ai-pane" style={aiAssistantPaneStyle}>
+                <AICopilotPanel
+                  documentTitle={document.title}
+                  currentSection={getCurrentSection()}
+                  isCompiling={isCompiling}
+                  onApplyContent={(content) => {
+                    const section = getCurrentSection();
+                    if (!section) {
+                      messageApi.warning('请选择需要插入内容的章节');
+                      return;
+                    }
+                    updateSectionContent(section.id, content);
+                    messageApi.success(`已将AI内容写入「${section.title}」`);
+                  }}
+                />
+              </div>
             )}
           </section>
         </div>
-
-        {/* AI助手模态框 */}
-        <Modal
-          title="AI智能助手"
-          open={showAIAssistant}
-          onCancel={() => setShowAIAssistant(false)}
-          width={800}
-          footer={null}
-        >
-          <AIAssistant
-            currentSection={getCurrentSection()}
-            onContentUpdate={(content) => {
-              if (getCurrentSection()) {
-                updateSectionContent(getCurrentSection()!.id, content);
-              }
-            }}
-          />
-        </Modal>
 
         {/* 全局设置模态框 */}
         <Modal

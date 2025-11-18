@@ -12,6 +12,8 @@ import { UserOutlined, BellOutlined, LogoutOutlined } from '@ant-design/icons';
 import type { MenuProps } from '@/utils/antdComponents';
 import routes from '@/../config/routes';
 
+type ProRoute = NonNullable<ProLayoutProps['route']>;
+
 const { Text } = Typography;
 
 // 用户下拉菜单
@@ -51,13 +53,26 @@ const handleUserMenuClick: MenuProps['onClick'] = ({ key }) => {
   }
 };
 
+const workbenchPaths = ['/typst-editor'];
+
 const MainLayout: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const routeConfig: ProLayoutProps['route'] = {
+  const routeConfig: ProRoute = {
     path: '/',
-    routes: routes as ProLayoutProps['route']['routes'],
+    routes: routes as ProRoute['routes'],
   };
+  const isWorkbenchPage = workbenchPaths.some(path => location.pathname.startsWith(path));
+  const layoutContentStyle: React.CSSProperties | undefined = isWorkbenchPage
+    ? {
+        margin: 0,
+        padding: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100%',
+        background: 'var(--color-bg-container)'
+      }
+    : undefined;
 
   return (
     <ProLayout
@@ -72,13 +87,6 @@ const MainLayout: React.FC = () => {
       fixedHeader={false}
       fixSiderbar={true}
       colorWeak={false}
-      token={{
-        colorPrimary: '#1677ff',
-        colorBgContainer: '#ffffff',
-        colorBgLayout: '#f5f5f5',
-        borderRadius: 6,
-        fontSize: 14,
-      }}
       actionsRender={() => [
         <Space key="actions">
           <Badge count={3} size="small" offset={[2, -2]}>
@@ -176,10 +184,17 @@ const MainLayout: React.FC = () => {
           </span>
         );
       }}
+      contentStyle={layoutContentStyle}
     >
-      <PageContainer>
-        <Outlet />
-      </PageContainer>
+      {isWorkbenchPage ? (
+        <div className="layout-workbench-container">
+          <Outlet />
+        </div>
+      ) : (
+        <PageContainer>
+          <Outlet />
+        </PageContainer>
+      )}
     </ProLayout>
   );
 };

@@ -12,3 +12,4 @@ yarn-error.log*
 coverage/
 *.tgz
 /.nyc_output
+.claude/settings.local.json
